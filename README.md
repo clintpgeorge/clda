@@ -25,7 +25,7 @@ Please see the documentation provided in each script before execution.
 
 Authors
 ----------------------------
-* [Clint P. George](clintpgeorge.wordpress.com) (Please contact for questions and comments)
+* [Clint P. George](https://clintpgeorge.wordpress.com) (Please contact for questions and comments)
 * Wei Xia
 * George Michailidis 
 
