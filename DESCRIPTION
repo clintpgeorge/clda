@@ -1,0 +1,19 @@
+Package: clda
+Type: Package
+Title: Approximate Inference Algorithms for the Compound Latent Dirichlet Allocation Model
+Version: 1.0
+Date: 2016-07-26
+Author: Clint P. George, Wei Xia, and George Michailidis
+Maintainer: Clint P. George<clintpg@ufl.edu>
+URL: https://github.com/clintpgeorge/clda
+Description: This R package implements several inference algorithms for the Compound Latent Dirichlet Allocation (CLDA) model.
+License: GPL Version 3
+Depends:
+    R (>= 3.2.2),
+    Rcpp (>= 0.12.2),
+    RcppArmadillo (>= 0.6.200.2.0),
+    lattice (>= 0.20-33)
+LinkingTo:
+    Rcpp,
+    RcppArmadillo
+RoxygenNote: 5.0.1

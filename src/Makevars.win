@@ -1,0 +1,6 @@
+
+## Use the R_HOME indirection to support installations of multiple R version
+## It's important to keep the FLAGS $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) to
+## make arma features work, e.g. inv(), chol(), etc.
+##
+PKG_LIBS = $(shell $(R_HOME)/bin${R_ARCH_BIN}/Rscript.exe -e "Rcpp:::LdFlags()") $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
