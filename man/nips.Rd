@@ -51,10 +51,9 @@ consists of 2,741 news articles and 9,156 unique words.
 \note{
 Created on July 26, 2015
 }
-\author{
-Clint P. George
-}
 \seealso{
 Other datasets: \code{\link{news}}, \code{\link{yelp}}
 }
-
+\author{
+Clint P. George
+}

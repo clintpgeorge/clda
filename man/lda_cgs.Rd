@@ -70,6 +70,7 @@ the corpus. We then run the variational EM algorithm based on the training
 set. Finally, we compute per-word perplexity based on the held-out set.
 }
 \seealso{
-Other MCMC: \code{\link{clda_ags}}, \code{\link{clda_mgs}}
+Other MCMC: \code{\link{clda_ags_em}},
+  \code{\link{clda_ags_sample_alpha}},
+  \code{\link{clda_ags}}, \code{\link{clda_mgs}}
 }
-

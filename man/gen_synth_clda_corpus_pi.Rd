@@ -54,4 +54,3 @@ ds                 <- gen_synth_clda_corpus(K, V, J, collection.size, doc.size, 
 \seealso{
 Other corpus: \code{\link{gen_synth_clda_corpus}}
 }
-

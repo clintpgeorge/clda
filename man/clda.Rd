@@ -3,8 +3,8 @@
 \docType{package}
 \name{clda}
 \alias{clda}
-\alias{clda-package}
 \alias{package-clda}
+\alias{clda-package}
 \title{Algorithms for the Compound Latent Dirichlet Allocation Model}
 \description{
 This R package implements the following inference algorithms
@@ -18,4 +18,3 @@ for the compound latent Dirichlet allocation (CLDA) model.
 \author{
 Clint P. George, Wei Xia, and George Michailidis
 }
-

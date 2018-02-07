@@ -50,10 +50,9 @@ corpus consists of 10,764 news articles and 9,208 unique words.
 \note{
 Created on July 26, 2015
 }
-\author{
-Clint P. George
-}
 \seealso{
 Other datasets: \code{\link{nips}}, \code{\link{yelp}}
 }
-
+\author{
+Clint P. George
+}

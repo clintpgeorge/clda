@@ -1,6 +1,7 @@
 // /////////////////////////////////////////////////////////////////////////////
 //
-// cLDA: Auxiliary Variable Update within Collpased Gibbs Sampler
+// cLDA: Auxiliary Variable Update within Collpased Gibbs Sampler with
+// hyperparameter alpha sampling
 //
 // Copyright (c) 2016  Clint P. George
 //
@@ -20,7 +21,8 @@
 
 # include "utils.h"
 
-//' cLDA: Auxiliary Variable Update within Collpased Gibbs Sampler
+//' cLDA: Auxiliary Variable Update within Collpased Gibbs Sampler with
+//' hyperparameter \eqn{\alpha} sampling
 //'
 //' This implements a Markov chain on \eqn{(z, \pi)} via the collapsed Gibbs
 //' sampling with auxiliary variable updates for the compound latent Dirichlet
@@ -37,7 +39,7 @@
 //' @param vocab_size  Vocabulary size
 //' @param docs_cid Collection ID for each document in the corpus (indices starts 0)
 //' @param docs_tf Corpus documents read from the Blei corpus format, e.g., via \code{\link{read_docs}} (indices starts with 0)
-//' @param alpha_h Hyperparameter for \eqn{\pi}
+//' @param alpha_h Hyperparameter for \eqn{\pi}. When \code{sample_alpha_h} is \code{true} this variable is used to initialize hyperparameter \eqn{\alpha}
 //' @param gamma_h Hyperparameter for \eqn{\theta}
 //' @param eta_h Hyperparameter for \eqn{\beta}
 //' @param max_iter Maximum number of Gibbs iterations to be performed
@@ -49,10 +51,12 @@
 //' @param save_lp if 0 the function does not save computed log posterior for iterations
 //' @param verbose from {0, 1, 2}
 //' @param init_pi the initial configuration for the collection level topic mixtures, i.e., \eqn{\pi} samples
-//' @param test_doc_share proportion of the test documents in the corpus.
-//'   Must be from [0., 1.)
-//' @param test_word_share proportion of the test words in each test document.
-//'   Must be from [0., 1.)
+//' @param test_doc_share proportion of the test documents in the corpus. Must be from [0., 1.)
+//' @param test_word_share proportion of the test words in each test document. Must be from [0., 1.)
+//' @param burn_in_pi burn in iterations until pi sampling
+//' @param sample_alpha_h sample hyperparameter \eqn{\alpha} (true) or not (false)
+//' @param gamma_shape hyperparameter \code{shape} for the Gamma prior on \eqn{\alpha}. Default is 1.
+//' @param gamma_rate hyperparameter \code{rate} for the Gamma prior on \eqn{\alpha}. Default is 1.
 //'
 //' @return A list of
 //'   \item{corpus_topic_counts}{corpus-level topic counts from last iteration
@@ -84,14 +88,16 @@
 //'
 //' @note
 //'
-//' Modified on: June 02, 2016
+//' Updated on: December 17, 2017 -- Added hyperparameter alpha sampling
+//'
+//' Updated on: June 02, 2016
 //'
 //' Created on: May 18, 2016
 //'
 //' Created by: Clint P. George
 //'
 // [[Rcpp::export]]
-List clda_ags(
+List clda_ags_sample_alpha(
     unsigned int num_topics,
     unsigned int vocab_size,
     NumericVector docs_cid,
@@ -110,12 +116,17 @@ List clda_ags(
     arma::mat init_pi, // TODO: to be deleted in the final version
     double test_doc_share = 0.,
     double test_word_share = 0.,
-    unsigned int burn_in_pi = 10) {
+    unsigned int burn_in_pi = 10,
+    bool sample_alpha_h = false,
+    double gamma_shape = 1.,
+    double gamma_rate = 1.) {
 
   assert(test_word_share < 1.);
   assert(test_word_share >= 0.);
   assert(test_doc_share < 1.);
   assert(test_doc_share >= 0.);
+  assert(gamma_shape > 0.);
+  assert(gamma_rate > 0.);
 
   burn_in_pi = (burn_in_pi >= max_iter) ? 0 : burn_in_pi;
 
@@ -145,6 +156,7 @@ List clda_ags(
   arma::mat pi_t = arma::zeros<arma::mat>(num_topics, num_collections); // K x J matrix
   arma::mat sterling_counts; // K x D matrix
 
+  arma::vec alpha_h_samples;
   arma::cube pi_samples;
   arma::cube theta_samples;
   arma::cube beta_samples;
@@ -158,7 +170,9 @@ List clda_ags(
   arma::mat PI_PRIOR(num_topics, num_collections); // K x J matrix
   PI_PRIOR.fill(alpha_h - 1.);
 
-
+  if (sample_alpha_h) {
+    alpha_h_samples = arma::zeros<arma::vec>(valid_samples);
+  }
   if (save_pi) {
     pi_samples = arma::cube(num_topics, num_collections, valid_samples);
   }
@@ -298,6 +312,9 @@ List clda_ags(
     cout << "clda-ags (c++): alpha_h: " << alpha_h << endl;
     cout << "clda-ags (c++): gamma_h: " << gamma_h << endl;
     cout << "clda-ags (c++): eta_h: " << eta_h << endl;
+    cout << "clda-ags (c++): burn_in_pi: " << burn_in_pi << endl;
+    cout << "clda-ags (c++): max_iter: " << max_iter << endl;
+    cout << "clda-ags (c++): valid_samples: " << valid_samples << endl;
   }
 
 
@@ -431,6 +448,26 @@ List clda_ags(
 
 
     ////////////////////////////////////////////////////////////////////////////
+    // samples alpha_h from the Gamma posterior
+    //
+    // Added on: December 17, 2017
+    ////////////////////////////////////////////////////////////////////////////
+
+    if (sample_alpha_h) {
+      double post_gamma_rate = gamma_rate - arma::accu(arma::log(pi_t));
+      alpha_h = Rcpp::rgamma(1, gamma_shape, 1. / post_gamma_rate)(0); // rgamma inputs shape and scale!
+      if (save_flag) {
+        alpha_h_samples(ss_idx) = alpha_h;
+      }
+      if (verbose > 1){
+        cout << " post_gamma_rate: " << post_gamma_rate;
+        cout << " alpha_h: " << alpha_h;
+      }
+    }
+
+
+
+    ////////////////////////////////////////////////////////////////////////////
     // Computes the estimate of the predictive likelihood
     // p(w^{\text{test}}_{jdi} | \bw^{\text{train}})
     // for each test word w^{\text{test}}_{jdi} in the corpus
@@ -542,18 +579,21 @@ List clda_ags(
   }
 
 
-  return List::create(Named("corpus_topic_counts") = wrap(corpus_topic_counts),
-                      Named("pi_counts") = wrap(pi_counts),
-                      Named("theta_counts") = wrap(theta_counts),
-                      Named("beta_counts") = wrap(beta_counts),
-                      Named("num_accept") = wrap(num_accept),
-                      Named("beta_samples") = wrap(beta_samples),
-                      Named("pi_samples") = wrap(pi_samples),
-                      Named("theta_samples") = wrap(theta_samples),
-                      Named("log_posterior") = wrap(log_posterior),
-                      Named("log_posterior_pi_z") = wrap(log_posterior_pi_z),
-                      Named("perplexity") = wrap(perplexity),
-                      Named("perplexity2") = wrap(perplexity2));
+  return List::create(
+    Named("corpus_topic_counts") = wrap(corpus_topic_counts),
+    Named("pi_counts") = wrap(pi_counts),
+    Named("theta_counts") = wrap(theta_counts),
+    Named("beta_counts") = wrap(beta_counts),
+    Named("num_accept") = wrap(num_accept),
+    Named("beta_samples") = wrap(beta_samples),
+    Named("pi_samples") = wrap(pi_samples),
+    Named("theta_samples") = wrap(theta_samples),
+    Named("log_posterior") = wrap(log_posterior),
+    Named("log_posterior_pi_z") = wrap(log_posterior_pi_z),
+    Named("perplexity") = wrap(perplexity),
+    Named("perplexity2") = wrap(perplexity2),
+    Named("alpha_h_samples") = wrap(alpha_h_samples)
+  );
 
 }
 

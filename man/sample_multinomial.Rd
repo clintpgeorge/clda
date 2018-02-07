@@ -26,4 +26,3 @@ Other utils: \code{\link{H}}, \code{\link{JSD.matrix}},
   \code{\link{sample_antoniak}},
   \code{\link{sample_dirichlet}}
 }
-

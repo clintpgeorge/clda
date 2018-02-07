@@ -72,4 +72,3 @@ set. Finally, we compute per-word perplexity based on the held-out set.
 \note{
 Created on May 13, 2016
 }
-

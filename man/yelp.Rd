@@ -52,10 +52,9 @@ It is a collection of restaurant reviews from Yelp. This corpus consists of
 \note{
 Created on July 26, 2015
 }
-\author{
-Clint P. George
-}
 \seealso{
 Other datasets: \code{\link{news}}, \code{\link{nips}}
 }
-
+\author{
+Clint P. George
+}

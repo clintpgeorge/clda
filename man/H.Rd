@@ -18,4 +18,3 @@ Other utils: \code{\link{JSD.matrix}}, \code{\link{JSD}},
   \code{\link{sample_dirichlet}},
   \code{\link{sample_multinomial}}
 }
-

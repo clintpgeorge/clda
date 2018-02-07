@@ -22,4 +22,3 @@ Align the rows of the \code{dest} matrix in terms of the \code{src} matrix
 \note{
 Created on April 14, 2016
 }
-

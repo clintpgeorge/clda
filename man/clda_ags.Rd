@@ -92,6 +92,7 @@ Created on: May 18, 2016
 Created by: Clint P. George
 }
 \seealso{
-Other MCMC: \code{\link{clda_mgs}}, \code{\link{lda_cgs}}
+Other MCMC: \code{\link{clda_ags_em}},
+  \code{\link{clda_ags_sample_alpha}},
+  \code{\link{clda_mgs}}, \code{\link{lda_cgs}}
 }
-
